@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trending TV Shows - Live Journal</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #111111;
+            --muted-color: #666666;
+            --border-color: #eaeaea;
+            --header-bg: rgba(255, 255, 255, 0.85);
+            --pill-bg: #f5f5f5;
+            --pill-active: #111111;
+            --pill-active-text: #ffffff;
+        }
+
+        [data-theme="gray"] {
+            --bg-color: #f2f2f2;
+            --text-color: #222222;
+            --muted-color: #555555;
+            --border-color: #dcdcdc;
+            --header-bg: rgba(242, 242, 242, 0.85);
+            --pill-bg: #e4e4e4;
+            --pill-active: #222222;
+            --pill-active-text: #ffffff;
+        }
+
+        html { box-sizing: border-box; }
+        *, *:before, *:after { box-sizing: inherit; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            display: flex;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .site-container {
+            width: 100%;
+            max-width: 640px;
+            padding: 90px 24px 60px 24px;
+            box-sizing: border-box;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            background-color: var(--header-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .header-inner {
+            width: 100%;
+            max-width: 640px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+        }
+
+        .site-title {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+
+        .theme-toggle-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        /* Filter Section */
+        .filters-section {
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--pill-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 5px 10px;
+            font-size: 11px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--pill-active);
+            color: var(--pill-active-text);
+            border-color: var(--pill-active);
+        }
+
+        /* Post List Layout */
+        .posts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .post-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            text-decoration: none;
+            color: inherit;
+            padding: 8px 0;
+            transition: opacity 0.2s;
+        }
+
+        .post-item:hover {
+            opacity: 0.75;
+        }
+
+        .post-thumbnail {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 4px;
+            flex-shrink: 0;
+            background-color: var(--border-color);
+        }
+
+        .post-content {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .post-category {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--muted-color);
+        }
+
+        .post-title {
+            font-size: 14px;
+            line-height: 1.4;
+            font-weight: 500;
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        .post-meta {
+            font-size: 11px;
+            color: var(--muted-color);
+            display: flex;
+            gap: 10px;
+        }
+
+        .post-rating {
+            color: #d4af37;
+            font-weight: 600;
+        }
+
+        /* Load More Button */
+        .load-more-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .load-more-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 20px;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .load-more-btn:hover {
+            background-color: var(--border-color);
+        }
+
+        /* Floating Support Button */
+        .support-banner {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ffdd00;
+            color: #000;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.2s ease;
+            z-index: 1000;
+        }
+        .support-banner:hover { transform: scale(1.05); }
+
+        footer {
+            margin-top: 60px;
+            font-size: 11px;
+            color: var(--muted-color);
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 24px;
+        }
+    </style>
+</head>
+<body data-theme="white">
+
+    <header>
+        <div class="header-inner">
+            <a href="#" class="site-title">trending.tv</a>
+            <button class="theme-toggle-btn" id="themeToggle">Switch to Gray</button>
+        </div>
+    </header>
+
+    <div class="site-container">
+        
+        <!-- Interactive Filter Bar -->
+        <div class="filters-section">
+            <div class="filter-group" id="country-filters">
+                <span style="font-size: 11px; color: var(--muted-color); align-self: center; margin-right: 4px;">Region:</span>
+                <button class="filter-btn active" data-country="">All</button>
+                <button class="filter-btn" data-country="KR">Korea</button>
+                <button class="filter-btn" data-country="JP">Japan</button>
+                <button class="filter-btn" data-country="CN">China</button>
+                <button class="filter-btn" data-country="US">USA</button>
+                <button class="filter-btn" data-country="GB">UK</button>
+            </div>
+            <div class="filter-group" id="status-filters">
+                <span style="font-size: 11px; color: var(--muted-color); align-self: center; margin-right: 4px;">Status:</span>
+                <button class="filter-btn active" data-status="all">All</button>
+                <button class="filter-btn" data-status="airing">Airing Now</button>
+                <button class="filter-btn" data-status="upcoming">Upcoming</button>
+                <button class="filter-btn" data-status="completed_last_month">Ended (Last Month)</button>
+            </div>
+        </div>
+
+        <main class="posts-list" id="shows-container">
+            <div style="color: var(--muted-color); font-size: 13px;">Loading shows...</div>
+        </main>
+
+        <div class="load-more-container" id="load-more-wrap" style="display: none;">
+            <button class="load-more-btn" id="loadMoreBtn">Load More Shows</button>
+        </div>
+
+        <footer>
+            Data powered by TMDB API • Clean & Filterable
+        </footer>
+    </div>
+
+    <a href="https://www.buymeacoffee.com/your_username" target="_blank" class="support-banner">
+        ☕ Support Project
+    </a>
+
+    <script>
+        const toggleButton = document.getElementById('themeToggle');
+        const bodyElement = document.body;
+
+        const savedTheme = localStorage.getItem('ici_theme') || 'white';
+        bodyElement.setAttribute('data-theme', savedTheme);
+        updateButtonText(savedTheme);
+
+        toggleButton.addEventListener('click', () => {
+            const currentTheme = bodyElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'white' ? 'gray' : 'white';
+            bodyElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('ici_theme', newTheme);
+            updateButtonText(newTheme);
+        });
+
+        function updateButtonText(theme) {
+            toggleButton.textContent = theme === 'white' ? 'Switch to Gray' : 'Switch to White';
+        }
+
+        const API_KEY = '104611aea044f0dff8f86e48d3e1ae55'; // Replace with your key
+        let allShows = [];
+        let displayedCount = 8;
+        let selectedCountry = '';
+        let selectedStatus = 'all';
+
+        async function fetchShows() {
+            try {
+                document.getElementById('shows-container').innerHTML = '<div style="color: var(--muted-color); font-size: 13px;">Fetching shows...</div>';
+                
+                // Build discover URL based on selected country region
+                let url = `https://api.themoviedb.org/3/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&include_null_first_air_dates=false`;
+                if (selectedCountry) {
+                    url += `&with_origin_country=${selectedCountry}`;
+                }
+
+                let response = await fetch(url);
+                let data = await response.json();
+                
+                allShows = data.results || [];
+                displayedCount = 8;
+                renderShows();
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                document.getElementById('shows-container').innerHTML = '<div style="color: red; font-size: 13px;">Failed to load shows. Check your API key.</div>';
+            }
+        }
+
+        function filterShows() {
+            return allShows.filter(show => {
+                if (selectedStatus === 'all') return true;
+
+                let firstAir = show.first_air_date ? new Date(show.first_air_date) : null;
+                let today = new Date();
+
+                if (selectedStatus === 'upcoming') {
+                    return firstAir && firstAir > today;
+                } 
+                
+                if (selectedStatus === 'airing') {
+                    // Airing now or ongoing context
+                    return show.in_production === true || (firstAir && firstAir <= today);
+                } 
+                
+                if (selectedStatus === 'completed_last_month') {
+                    // Check if it ended or finished recently roughly around last month / past 60 days
+                    let thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(today.getDate() - 60);
+                    return show.in_production === false && firstAir && firstAir >= thirtyDaysAgo && firstAir <= today;
+                }
+
+                return true;
+            });
+        }
+
+        function renderShows() {
+            const container = document.getElementById('shows-container');
+            const loadMoreWrap = document.getElementById('load-more-wrap');
+            container.innerHTML = '';
+
+            let filtered = filterShows();
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="color: var(--muted-color); font-size: 13px;">No shows found for this filter combination. Try changing region or status.</div>';
+                loadMoreWrap.style.display = 'none';
+                return;
+            }
+
+            let showsToDisplay = filtered.slice(0, displayedCount);
+
+            showsToDisplay.forEach(show => {
+                const item = document.createElement('a');
+                item.href = `https://www.themoviedb.org/tv/${show.id}`;
+                item.target = '_blank';
+                item.className = 'post-item';
+                
+                const poster = show.poster_path 
+                    ? `https://image.tmdb.org/t/p/w200${show.poster_path}` 
+                    : 'https://via.placeholder.com/120?text=No+Image';
+
+                const rating = show.vote_average ? show.vote_average.toFixed(1) : 'N/A';
+                const country = show.origin_country ? show.origin_country.join(', ') : 'Global';
+                const airDate = show.first_air_date ? show.first_air_date.split('-')[0] : 'TBA';
+
+                item.innerHTML = `
+                    <img src="${poster}" alt="${show.name}" class="post-thumbnail">
+                    <div class="post-content">
+                        <span class="post-category">${country} • Premiere ${airDate}</span>
+                        <h2 class="post-title">${show.name}</h2>
+                        <div class="post-meta">
+                            <span class="post-rating">⭐ ${rating} / 10</span>
+                            <span>•</span>
+                            <span>${show.in_production ? '🟢 Airing' : '🏁 Completed'}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+
+            if (filtered.length > displayedCount) {
+                loadMoreWrap.style.display = 'block';
+            } else {
+                loadMoreWrap.style.display = 'none';
+            }
+        }
+
+        // Event Listeners for Country Filter (Refetches dynamically from API)
+        document.querySelectorAll('#country-filters .filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('#country-filters .filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                selectedCountry = e.target.getAttribute('data-country');
+                fetchShows(); // Refetch specific regional data from backend
+            });
+        });
+
+        // Event Listeners for Status Filter (Filters local active array instantly)
+        document.querySelectorAll('#status-filters .filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('#status-filters .filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                selectedStatus = e.target.getAttribute('data-status');
+                displayedCount = 8;
+                renderShows();
+            });
+        });
+
+        document.getElementById('loadMoreBtn').addEventListener('click', () => {
+            displayedCount += 8;
+            renderShows();
+        });
+
+        // Initial Load
+        fetchShows();
+    </script>
+</body>
+</html>
